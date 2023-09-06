@@ -25,7 +25,7 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-  global teamA_active, teamB_active, game_status, teamA, teamB
+  global teamA_active, teamB_active, game_status
 
   if message.author == client.user:
     return
@@ -37,6 +37,8 @@ async def on_message(message):
   if message.content == "公布内鬼" and teamA_active and teamB_active:
     await message.channel.send(f"内鬼是{underCover[0]}, {underCover[1]}")
     print(f"===============内鬼是{underCover[0]}, {underCover[1]}")
+  if 
+    
   if game_status:
     def check_team_choice(m):
       return m.author == message.author and m.channel == message.channel and m.content.lower(
@@ -56,7 +58,7 @@ async def on_message(message):
 
 
 async def startGame():
-  global teamA_active, teamB_active, game_status, teamA, teamB
+  global teamA_active, teamB_active, game_status
   print('Start Game!!!!')
   game_status = True
   teamB_active = False
@@ -83,7 +85,6 @@ async def listenToTeam(message, team_choice_response, team_choice):
   message = user_response
   if message.mentions:
     mentioned_users = message.mentions
-
     for a in mentioned_users:
       if len(team) < teamSize:
         team.append(a)
@@ -92,7 +93,6 @@ async def listenToTeam(message, team_choice_response, team_choice):
             f'{team_choice.upper()}队不能超过{teamSize}人，请重新输入')
     res = ','.join(x.global_name for x in team)
     await message.channel.send(f'{team_choice.upper()}队: {res}')
-
     choosed_user = random.choice(mentioned_users)
     underCover.append(choosed_user.global_name)
     await message.channel.send(f'内鬼已经选出，请查看Discord私信')
