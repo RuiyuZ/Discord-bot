@@ -73,7 +73,7 @@ async def on_message(message):
 async def vote(message, team_choice):
   global teamA_active, teamB_active, game_status, teamA, teamB
   team = teamA if team_choice == 'a' else teamB
-  result = ','.join(
+  result = ', '.join(
       str(i + 1) + "号:" + x.global_name for i, x in enumerate(team))
   await message.channel.send(f"{team_choice.upper()}队人员编号为：{result}")
   await message.channel.send("请开始投票")
