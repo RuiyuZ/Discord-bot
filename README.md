@@ -1,4 +1,4 @@
-#Discord bot 内鬼模式机器人
+# Discord bot 内鬼模式机器人
 
 ## How to run
 1. After cloning this repo, create a Python venv and run:
