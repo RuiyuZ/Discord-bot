@@ -1,23 +1,25 @@
 import asyncio
+import json
 import random
 import discord
 from discord.ext import commands
 
-
 class Team:
     def __init__(self, name, team, under_cover):
         self.name = name
-        self.team = team
+        self.members = team
         self.under_cover = under_cover
 
 
-class StartGame(commands.Cog, Team):
+class StartGame(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.msg_id = None
         self.num_undercover = random.choice([1, 2, 1, 2, 5])
         self.teamA = Team('A', [], [])
         self.teamB = Team('B', [], [])
+        with open('undercover_tasks.json') as f:
+            self.tasks = json.load(f)['tasks']
 
     @commands.command()
     async def bothelp(self, ctx):
@@ -28,7 +30,7 @@ class StartGame(commands.Cog, Team):
 
     def game_init(self):
         self.msg_id = None
-        self.num_undercover = random.choice([1, 2, 1, 2, 5])
+        self.num_undercover = random.choice([1, 2, 1, 2, 1, 2, 5])
         self.teamA = Team('A', [], [])
         self.teamB = Team('B', [], [])
 
@@ -65,15 +67,15 @@ class StartGame(commands.Cog, Team):
         for reaction in message.reactions:
             if str(reaction.emoji) == '🅰️':
                 users = [user async for user in reaction.users() if user.global_name is not None]
-                self.teamA.team.extend(users)
+                self.teamA.members.extend(users)
                 print(f"team A: {', '.join(user.global_name for user in users)}")
             elif str(reaction.emoji) == '🅱️':
                 users = [user async for user in reaction.users() if user.global_name is not None]
-                self.teamB.team.extend(users)
+                self.teamB.members.extend(users)
                 print(f"team B: {', '.join(user.global_name for user in users)}")
 
-        des = (f"A队: {', '.join(user.global_name for user in self.teamA.team)}\n"
-               f"B队: {', '.join(user.global_name for user in self.teamB.team)}")
+        des = (f"A队: {', '.join(user.global_name for user in self.teamA.members)}\n"
+               f"B队: {', '.join(user.global_name for user in self.teamB.members)}")
         embed = discord.Embed(title="开始组队", description=des,
                               color=discord.Color.blue())
         await ctx.send(embed=embed)
@@ -84,20 +86,20 @@ class StartGame(commands.Cog, Team):
 
         self.teamA.under_cover, self.teamB.under_cover = await asyncio.gather(teamA_under_cover, teamB_under_cover)
 
-    async def handle_undercover(self, ctx, team_) -> []:
-        chosen_users = random.sample(team_.team, min(len(team_.team), self.num_undercover))
+    async def handle_undercover(self, ctx, team) -> []:
+        chosen_users = random.sample(team.members, min(len(team.members), self.num_undercover))
         print(f'len chosen_users: {len(chosen_users)}')
         print(f'undercover num: {self.num_undercover}')
         print(f'内鬼是：{[u.global_name for u in chosen_users]}')
 
-        await ctx.send(f'{team_.name}队内鬼已经选出，请查看Discord私信')
-        await asyncio.wait([self.message_undercover(u) for u in chosen_users])
+        await ctx.send(f'{team.name}队内鬼已经选出，请查看Discord私信')
+        await asyncio.wait([self.message_undercover(u, random.choice(self.tasks)) for u in chosen_users])
 
-        await ctx.send(f'已收到 {team_.name.upper()} 队内鬼的回复')
+        await ctx.send(f'已收到 {team.name.upper()} 队内鬼的回复')
         return chosen_users
 
-    async def message_undercover(self, chosen_user):
-        await chosen_user.send('你是内鬼，收到请回复（回复任何字符都可）')
+    async def message_undercover(self, chosen_user, task):
+        await chosen_user.send(f'你是内鬼，收到请回复（回复任何字符都可）\n你的内鬼任务是：{task}')
 
         def check_yes(m):
             return m.author == chosen_user and len(m.content) != 0 and isinstance(
@@ -118,18 +120,18 @@ class StartGame(commands.Cog, Team):
 
         await asyncio.gather(voted_teamA, voted_teamB)
 
-    async def vote_team(self, ctx, nums_emoji, team_):
-        if (len(team_.under_cover) == len(team_.team)):
-            await ctx.send(f"👻👻👻👻👻 奥斯卡之夜！全员内鬼 👻👻👻👻👻")
+    async def vote_team(self, ctx, nums_emoji, team):
+        if (len(team.under_cover) == len(team.members)):
+            await ctx.send(f"'👻''👻''👻''👻''👻'奥斯卡之夜！全员内鬼'👻''👻''👻''👻''👻'")
             return
 
-        des = (f"{team_.name}队有{len(team_.under_cover)}个内鬼\n"
-               f"{team_.name.upper()}队内鬼投票：{', '.join([nums_emoji[i] + ': ' + v.global_name for i, v in enumerate(team_.team)])}")
-        embed = discord.Embed(title=f"{team_.name.upper()}队内鬼投票", description=des,
+        des = (f"{team.name}队有{len(team.under_cover)}个内鬼\n"
+               f"{team.name.upper()}队内鬼投票：{', '.join([nums_emoji[i] + ': ' + v.global_name for i, v in enumerate(team.members)])}")
+        embed = discord.Embed(title=f"{team.name.upper()}队内鬼投票", description=des,
                               color=discord.Color.blue())
 
         msg = await ctx.send(embed=embed)
-        for emoji in nums_emoji[:len(team_.team)]:
+        for emoji in nums_emoji[:len(team.members)]:
             await msg.add_reaction(emoji)
 
     @commands.command()
