@@ -1,4 +1,5 @@
 import asyncio
+import json
 import random
 import discord
 from discord.ext import commands
@@ -11,6 +12,7 @@ class Team:
         self.under_cover = under_cover
 
 
+
 class StartGame(commands.Cog, Team):
     def __init__(self, bot):
         self.bot = bot
@@ -18,6 +20,8 @@ class StartGame(commands.Cog, Team):
         self.num_undercover = random.choice([1, 2, 1, 2, 5])
         self.teamA = Team('A', [], [])
         self.teamB = Team('B', [], [])
+        with open('undercover_tasks.json') as f:
+            self.tasks = json.load(f)['tasks']
 
     @commands.command()
     async def bothelp(self, ctx):
@@ -91,13 +95,13 @@ class StartGame(commands.Cog, Team):
         print(f'内鬼是：{[u.global_name for u in chosen_users]}')
 
         await ctx.send(f'{team_.name}队内鬼已经选出，请查看Discord私信')
-        await asyncio.wait([self.message_undercover(u) for u in chosen_users])
+        await asyncio.wait([self.message_undercover(u, random.choice(self.tasks)) for u in chosen_users])
 
         await ctx.send(f'已收到 {team_.name.upper()} 队内鬼的回复')
         return chosen_users
 
-    async def message_undercover(self, chosen_user):
-        await chosen_user.send('你是内鬼，收到请回复（回复任何字符都可）')
+    async def message_undercover(self, chosen_user, task):
+        await chosen_user.send(f'你是内鬼，收到请回复（回复任何字符都可）\n你的内鬼任务是：{task}')
 
         def check_yes(m):
             return m.author == chosen_user and len(m.content) != 0 and isinstance(
