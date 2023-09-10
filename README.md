@@ -18,8 +18,12 @@ DM ThePao to get the SECRET_TOKEN
 
 
 ## Discord指令
-开始内战
+/bothelp
 
-开始投票
+输入 /start 开始内战
 
-公布内鬼
+输入 /game 分配内鬼 
+
+输入 /botvote 开始投票 
+
+输入 /result 公布内鬼
