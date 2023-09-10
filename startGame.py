@@ -109,7 +109,7 @@ class StartGame(commands.Cog, Team):
         voted_teamA = self.vote_team(ctx, nums_emoji, self.teamA)
         voted_teamB = self.vote_team(ctx, nums_emoji, self.teamB)
 
-        asyncio.gather(voted_teamA, voted_teamB)
+        await asyncio.gather(voted_teamA, voted_teamB)
 
     async def vote_team(self, ctx, nums_emoji, team_):
         if (len(team_.under_cover) == len(team_.team)):
@@ -118,7 +118,7 @@ class StartGame(commands.Cog, Team):
 
         des = (f"{team_.name}队有{len(team_.under_cover)}个内鬼\n"
                f"{team_.name.upper()}队内鬼投票：{', '.join([nums_emoji[i] + ': ' + v.global_name for i, v in enumerate(team_.team)])}")
-        embed = discord.Embed(title="内鬼投票", description=des,
+        embed = discord.Embed(title=f"{team_.name.upper()}队内鬼投票", description=des,
                               color=discord.Color.blue())
 
         msg = await ctx.send(embed=embed)
@@ -127,8 +127,8 @@ class StartGame(commands.Cog, Team):
 
     @commands.command()
     async def result(self, ctx):
-        des = (f"A队内鬼是: {', '.join([u.global_name for u in self.teamA.under_cover])}\n"
-               f"B队内鬼是: {', '.join([u.global_name for u in self.teamB.under_cover])}")
+        des = (f"A队内鬼: {', '.join([u.global_name for u in self.teamA.under_cover])}\n"
+               f"B队内鬼: {', '.join([u.global_name for u in self.teamB.under_cover])}")
         embed = discord.Embed(title="公布内鬼", description=des,
                               color=discord.Color.blue())
         await ctx.send(embed=embed)
