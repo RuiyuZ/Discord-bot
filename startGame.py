@@ -14,7 +14,7 @@ class StartGame(commands.Cog, Team):
     def __init__(self, bot):
         self.bot = bot
         self.msg_id = None
-        self.num_undercover = random.choice([1, 2, 1, 2, 1, 2, 5])
+        self.num_undercover = random.choice([1, 2, 1, 2, 5])
         self.teamA = Team('A', [], [])
         self.teamB = Team('B', [], [])
 
