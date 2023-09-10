@@ -2,12 +2,13 @@ import asyncio
 import json
 import random
 import discord
+from discord import app_commands
 from discord.ext import commands
 
 class Team:
-    def __init__(self, name, team, under_cover):
+    def __init__(self, name, members, under_cover):
         self.name = name
-        self.members = team
+        self.members = members
         self.under_cover = under_cover
 
 
@@ -18,14 +19,14 @@ class StartGame(commands.Cog):
         self.num_undercover = random.choice([1, 2, 1, 2, 5])
         self.teamA = Team('A', [], [])
         self.teamB = Team('B', [], [])
-        with open('undercover_tasks.json') as f:
-            self.tasks = json.load(f)['tasks']
+        # with open('undercover_tasks.json') as f:
+        #     self.tasks = json.load(f)['tasks']
 
-    @commands.command()
-    async def bothelp(self, ctx):
+    @app_commands.command(name='help', description='列出所有commands')
+    async def help(self, ctx):
         await ctx.send("输入 /start 开始内战 \n" +
                        "输入 /game 分配内鬼 \n" +
-                       "输入 /botvote 开始投票 \n" +
+                       "输入 /vote 开始投票 \n" +
                        "输入 /result 公布内鬼 ")
 
     def game_init(self):
@@ -34,7 +35,7 @@ class StartGame(commands.Cog):
         self.teamA = Team('A', [], [])
         self.teamB = Team('B', [], [])
 
-    @commands.command()
+    @app_commands.command(name='start', description='开始内战')
     async def start(self, ctx):
         self.game_init()
         # Send a message with buttons
@@ -57,7 +58,7 @@ class StartGame(commands.Cog):
         except asyncio.TimeoutError:
             await ctx.send("You didn't make a choice in time.")
 
-    @commands.command()
+    @app_commands.command(name='game', description='开始组队并分配内鬼')
     async def game(self, ctx):
         if self.msg_id is None:
             await ctx.send("The game has not been started yet.")
@@ -93,11 +94,12 @@ class StartGame(commands.Cog):
         print(f'内鬼是：{[u.global_name for u in chosen_users]}')
 
         await ctx.send(f'{team.name}队内鬼已经选出，请查看Discord私信')
-        await asyncio.wait([self.message_undercover(u, random.choice(self.tasks)) for u in chosen_users])
+        await asyncio.wait([self.message_undercover(u for u in chosen_users)])
 
         await ctx.send(f'已收到 {team.name.upper()} 队内鬼的回复')
         return chosen_users
 
+    #overload with undercover tasks
     async def message_undercover(self, chosen_user, task):
         await chosen_user.send(f'你是内鬼，收到请回复（回复任何字符都可）\n你的内鬼任务是：{task}')
 
@@ -107,8 +109,17 @@ class StartGame(commands.Cog):
 
         await self.bot.wait_for('message', check=check_yes)
 
-    @commands.command()
-    async def botvote(self, ctx):
+    async def message_undercover(self, chosen_user):
+        await chosen_user.send(f'你是内鬼，收到请回复（回复任何字符都可')
+
+        def check_yes(m):
+            return m.author == chosen_user and len(m.content) != 0 and isinstance(
+                m.channel, discord.DMChannel)
+
+        await self.bot.wait_for('message', check=check_yes)
+
+    @app_commands.command(name='vote', description='开始投票')
+    async def vote(self, ctx):
         if self.msg_id is None:
             await ctx.send("The game has not been started yet.")
             return
@@ -134,7 +145,7 @@ class StartGame(commands.Cog):
         for emoji in nums_emoji[:len(team.members)]:
             await msg.add_reaction(emoji)
 
-    @commands.command()
+    @app_commands.command(name='result', description='公布内鬼')
     async def result(self, ctx):
         des = (f"A队内鬼: {', '.join([u.global_name for u in self.teamA.under_cover])}\n"
                f"B队内鬼: {', '.join([u.global_name for u in self.teamB.under_cover])}")
