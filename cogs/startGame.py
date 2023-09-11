@@ -17,7 +17,8 @@ class StartGame(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.msg_id = None
-        self.num_undercover = random.choice([1, 2, 1, 2, 5])
+        # self.num_undercover = random.choice([1, 2, 1, 2, 5])
+        self.num_undercover = random.choice([1])
         self.teamA = Team('A', [], [])
         self.teamB = Team('B', [], [])
         # with open('undercover_tasks.json') as f:
@@ -66,7 +67,7 @@ class StartGame(commands.Cog):
             await ctx.response.send_message("The game has not been started yet.")
             return
 
-        channel = await self.bot.get_channel(1148750575450718268)
+        channel = self.bot.get_channel(int(1148759441026580591))
         message = await channel.fetch_message(self.msg_id)
         # message = await ctx.response.fetch_message(self.msg_id)
 
@@ -98,24 +99,17 @@ class StartGame(commands.Cog):
         print(f'undercover num: {self.num_undercover}')
         print(f'内鬼是：{[u.global_name for u in chosen_users]}')
 
-        await ctx.response.send_message(f'{team.name}队内鬼已经选出，请查看Discord私信')
-        await asyncio.wait([self.message_undercover(u for u in chosen_users)])
+        await ctx.followup.send(f'{team.name}队内鬼已经选出，请查看Discord私信')
+        await asyncio.wait([self.message_undercover(u) for u in chosen_users])
 
-        await ctx.response.send_message(f'已收到 {team.name.upper()} 队内鬼的回复')
+        await ctx.followup.send(f'已收到 {team.name.upper()} 队内鬼的回复')
         return chosen_users
 
-    #overload with undercover tasks
-    async def message_undercover(self, chosen_user, task):
-        await chosen_user.send(f'你是内鬼，收到请回复（回复任何字符都可）\n你的内鬼任务是：{task}')
-
-        def check_yes(m):
-            return m.author == chosen_user and len(m.content) != 0 and isinstance(
-                m.channel, discord.DMChannel)
-
-        await self.bot.wait_for('message', check=check_yes)
-
-    async def message_undercover(self, chosen_user):
-        await chosen_user.send(f'你是内鬼，收到请回复（回复任何字符都可')
+    async def message_undercover(self, chosen_user, task=None):
+        if task is not None:
+            await chosen_user.send(f'你是内鬼，收到请回复（回复任何字符都可）\n你的内鬼任务是：{task}')
+        else:
+            await chosen_user.send(f'你是内鬼，收到请回复（回复任何字符都可）')
 
         def check_yes(m):
             return m.author == chosen_user and len(m.content) != 0 and isinstance(
@@ -138,7 +132,7 @@ class StartGame(commands.Cog):
 
     async def vote_team(self, ctx: discord.Interaction, nums_emoji, team):
         if (len(team.under_cover) == len(team.members)):
-            await ctx.response.send_message(f"'👻''👻''👻''👻''👻'奥斯卡之夜！全员内鬼'👻''👻''👻''👻''👻'")
+            await ctx.followup.send(f"'👻''👻''👻''👻''👻'奥斯卡之夜！全员内鬼'👻''👻''👻''👻''👻'")
             return
 
         des = (f"{team.name}队有{len(team.under_cover)}个内鬼\n"
@@ -146,7 +140,8 @@ class StartGame(commands.Cog):
         embed = discord.Embed(title=f"{team.name.upper()}队内鬼投票", description=des,
                               color=discord.Color.blue())
 
-        msg = await ctx.response.send_message(embed=embed)
+        await ctx.response.send_message(embed=embed)
+        msg = await ctx.original_response()
         for emoji in nums_emoji[:len(team.members)]:
             await msg.add_reaction(emoji)
 
