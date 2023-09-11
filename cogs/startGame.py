@@ -114,7 +114,7 @@ class StartGame(commands.Cog):
     @app_commands.command(name='vote', description='开始投票')
     async def vote(self, ctx):
         if self.msg_id is None:
-            await ctx.channel.send("The game has not been started yet.")
+            await ctx.response.send_message("The game has not been started yet.")
             return
 
         nums_emoji = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣']
@@ -126,7 +126,7 @@ class StartGame(commands.Cog):
         await asyncio.gather(voted_teamA, voted_teamB)
 
     async def vote_team(self, ctx, nums_emoji, team):
-        if (len(team.under_cover) == len(team.members)):
+        if len(team.under_cover) == len(team.members):
             await ctx.followup.send(f"'👻''👻''👻''👻''👻'奥斯卡之夜！全员内鬼'👻''👻''👻''👻''👻'")
             return
 
