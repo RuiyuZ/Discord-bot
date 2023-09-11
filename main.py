@@ -21,7 +21,7 @@ class Bot(commands.Bot):
 
     async def on_command_error(self, ctx, error):
         if isinstance(error, commands.CommandNotFound):
-            await ctx.send("Command not found. Use `/bothelp`, `/start`, `/game`, `/botvote` or `/result`")
+            await ctx.send("Command not found. Use `/help`, `/start`, `/game`, `/vote` or `/result`")
 
     async def setup_hook(self):
         for file in os.listdir(f'./cogs'):
