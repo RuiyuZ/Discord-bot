@@ -25,10 +25,16 @@ class StartGame(commands.Cog, Team):
                        "输入 /botvote 开始投票 \n" +
                        "输入 /result 公布内鬼 ")
 
+    def game_init(self):
+        self.msg_id = None
+        self.num_undercover = random.choice([1, 2, 1, 2, 1, 2, 5])
+        self.teamA = Team('A', [], [])
+        self.teamB = Team('B', [], [])
 
     @commands.command()
     async def start(self, ctx):
         # Send a message with buttons
+        self.game_init()
         embed = discord.Embed(title="开始内战", description="请A，B队的成员分别点下面的🅰️ 🅱️, 每人只点一个，点错及时修改",
                               color=discord.Color.blue())
         msg = await ctx.send(embed=embed)
