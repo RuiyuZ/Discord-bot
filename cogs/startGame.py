@@ -2,9 +2,9 @@ import asyncio
 import json
 import random
 import discord
-from aiohttp import payload
 from discord import app_commands
 from discord.ext import commands
+
 
 class Team:
     def __init__(self, name, members, under_cover):
@@ -16,9 +16,11 @@ class Team:
 class StartGame(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.game_init()
+
+    def game_init(self):
         self.msg_id = None
-        # self.num_undercover = random.choice([1, 2, 1, 2, 5])
-        self.num_undercover = random.choice([1])
+        self.num_undercover = random.choice([1, 2, 1, 2, 1, 2, 5])
         self.teamA = Team('A', [], [])
         self.teamB = Team('B', [], [])
         # with open('undercover_tasks.json') as f:
@@ -27,20 +29,14 @@ class StartGame(commands.Cog):
     @app_commands.command(name='help', description='列出所有commands')
     async def help(self, ctx: discord.Interaction):
         await ctx.response.send_message("输入 /start 开始内战 \n" +
-                       "输入 /game 分配内鬼 \n" +
-                       "输入 /vote 开始投票 \n" +
-                       "输入 /result 公布内鬼 ")
-
-    def game_init(self):
-        self.msg_id = None
-        self.num_undercover = random.choice([1, 2, 1, 2, 1, 2, 5])
-        self.teamA = Team('A', [], [])
-        self.teamB = Team('B', [], [])
+                                        "输入 /game 分配内鬼 \n" +
+                                        "输入 /vote 开始投票 \n" +
+                                        "输入 /result 公布内鬼 ")
 
     @app_commands.command(name='start', description='开始内战')
     async def start(self, ctx: discord.Interaction):
         self.game_init()
-        # Send a message with buttons
+
         embed = discord.Embed(title="开始内战", description="房间左边对应🅰️队，右边对应🅱️队，每个人只点一次。点错后再点一次取消，重新选择正确的",
                               color=discord.Color.blue())
         await ctx.response.send_message(embed=embed)
@@ -61,15 +57,13 @@ class StartGame(commands.Cog):
         except asyncio.TimeoutError:
             await ctx.response.send_message("You didn't make a choice in time.")
 
-    @app_commands.command(name='game', description='开始组队并分配内鬼')
+    @app_commands.command(name='game', description='分配内鬼')
     async def game(self, ctx: discord.Interaction):
         if self.msg_id is None:
             await ctx.response.send_message("The game has not been started yet.")
             return
 
-        channel = self.bot.get_channel(int(1148759441026580591))
-        message = await channel.fetch_message(self.msg_id)
-        # message = await ctx.response.fetch_message(self.msg_id)
+        message = await ctx.channel.fetch_message(self.msg_id)
 
         for reaction in message.reactions:
             if str(reaction.emoji) == '🅰️':
@@ -118,9 +112,9 @@ class StartGame(commands.Cog):
         await self.bot.wait_for('message', check=check_yes)
 
     @app_commands.command(name='vote', description='开始投票')
-    async def vote(self, ctx: discord.Interaction):
+    async def vote(self, ctx):
         if self.msg_id is None:
-            await ctx.response.send_message("The game has not been started yet.")
+            await ctx.channel.send("The game has not been started yet.")
             return
 
         nums_emoji = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣']
@@ -128,9 +122,10 @@ class StartGame(commands.Cog):
         voted_teamA = self.vote_team(ctx, nums_emoji, self.teamA)
         voted_teamB = self.vote_team(ctx, nums_emoji, self.teamB)
 
+        await ctx.response.defer()
         await asyncio.gather(voted_teamA, voted_teamB)
 
-    async def vote_team(self, ctx: discord.Interaction, nums_emoji, team):
+    async def vote_team(self, ctx, nums_emoji, team):
         if (len(team.under_cover) == len(team.members)):
             await ctx.followup.send(f"'👻''👻''👻''👻''👻'奥斯卡之夜！全员内鬼'👻''👻''👻''👻''👻'")
             return
@@ -140,8 +135,7 @@ class StartGame(commands.Cog):
         embed = discord.Embed(title=f"{team.name.upper()}队内鬼投票", description=des,
                               color=discord.Color.blue())
 
-        await ctx.response.send_message(embed=embed)
-        msg = await ctx.original_response()
+        msg = await ctx.followup.send(embed=embed)
         for emoji in nums_emoji[:len(team.members)]:
             await msg.add_reaction(emoji)
 
