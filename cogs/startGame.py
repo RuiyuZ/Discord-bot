@@ -39,7 +39,7 @@ class StartGame(commands.Cog):
     async def start(self, ctx):
         self.game_init()
         # Send a message with buttons
-        embed = discord.Embed(title="开始内战", description="请A，B队的成员分别点下面的🅰️ 🅱️, 每人只点一个，点错及时修改",
+        embed = discord.Embed(title="开始内战", description="房间左边对应🅰️队，右边对应🅱️队，每个人只点一次。点错后再点一次取消，重新选择正确的",
                               color=discord.Color.blue())
         msg = await ctx.send(embed=embed)
         self.msg_id = msg.id
