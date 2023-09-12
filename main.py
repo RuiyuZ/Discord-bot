@@ -7,8 +7,6 @@ from dotenv import load_dotenv
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="/", intents=intents)
 load_dotenv()
-GUILD = os.getenv('GUILD')
-TEST_GUILD = bot.get_guild(GUILD)
 
 
 class Bot(commands.Bot):

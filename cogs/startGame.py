@@ -1,5 +1,6 @@
 import asyncio
 import json
+import os
 import random
 import discord
 from discord import app_commands
@@ -23,8 +24,8 @@ class StartGame(commands.Cog):
         self.num_undercover = random.choice([1, 2, 1, 2, 1, 2, 5])
         self.teamA = Team('A', [], [])
         self.teamB = Team('B', [], [])
-        # with open('undercover_tasks.json') as f:
-        #     self.tasks = json.load(f)['tasks']
+        with open('cogs/undercover_tasks.json') as f:
+            self.tasks = json.load(f)['tasks']
 
     @app_commands.command(name='help', description='列出所有commands')
     async def help(self, ctx: discord.Interaction):
@@ -52,10 +53,10 @@ class StartGame(commands.Cog):
         def reaction_check(reaction, user):
             return user == ctx.user and str(reaction.emoji) in emojis
 
-        try:
-            await self.bot.wait_for('reaction_add', timeout=60.0, check=reaction_check)
-        except asyncio.TimeoutError:
-            await ctx.response.send_message("You didn't make a choice in time.")
+        # try:
+        await self.bot.wait_for('reaction_add', timeout=60.0, check=reaction_check)
+        # except asyncio.TimeoutError:
+        #     await ctx.response.send_message("You didn't make a choice in time.")
 
     @app_commands.command(name='game', description='分配内鬼')
     async def game(self, ctx: discord.Interaction):
@@ -127,7 +128,8 @@ class StartGame(commands.Cog):
 
     async def vote_team(self, ctx, nums_emoji, team):
         if len(team.under_cover) == len(team.members):
-            await ctx.followup.send(f"'👻''👻''👻''👻''👻'奥斯卡之夜！全员内鬼'👻''👻''👻''👻''👻'")
+            embed = discord.Embed(title="👻👻👻👻👻 奥斯卡之夜！全员内鬼 👻👻👻👻👻", color=discord.Color.blue())
+            await ctx.followup.send(embed=embed)
             return
 
         des = (f"{team.name}队有{len(team.under_cover)}个内鬼\n"
