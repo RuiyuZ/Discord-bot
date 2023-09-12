@@ -53,10 +53,7 @@ class StartGame(commands.Cog):
         def reaction_check(reaction, user):
             return user == ctx.user and str(reaction.emoji) in emojis
 
-        # try:
-        await self.bot.wait_for('reaction_add', timeout=60.0, check=reaction_check)
-        # except asyncio.TimeoutError:
-        #     await ctx.response.send_message("You didn't make a choice in time.")
+        await self.bot.wait_for('reaction_add', timeout=120.0, check=reaction_check)
 
     @app_commands.command(name='game', description='分配内鬼')
     async def game(self, ctx: discord.Interaction):
