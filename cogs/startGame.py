@@ -21,6 +21,7 @@ class StartGame(commands.Cog):
 
     def game_init(self):
         self.msg_id = None
+#         self.num_undercover = random.choice([1])
         self.num_undercover = random.choice([1, 2, 1, 2, 1, 2, 5])
         self.teamA = Team('A', [], [])
         self.teamB = Team('B', [], [])
@@ -57,6 +58,9 @@ class StartGame(commands.Cog):
 
     @app_commands.command(name='game', description='分配内鬼')
     async def game(self, ctx: discord.Interaction):
+        if len(self.teamA) != 0 or len(self.teamB) != 0:
+            await ctx.response.send_message("Team is not empty. To start a new team, type /start again.")
+            return
         if self.msg_id is None:
             await ctx.response.send_message("The game has not been started yet.")
             return
@@ -111,7 +115,7 @@ class StartGame(commands.Cog):
 
     @app_commands.command(name='vote', description='开始投票')
     async def vote(self, ctx):
-        if self.msg_id is None:
+        if self.msg_id is None or len(self.teamA) is 0 or len(self.teamB) is 0:
             await ctx.response.send_message("The game has not been started yet.")
             return
 
