@@ -3,6 +3,7 @@
 ## How to run
 1. Create venv:
 ```
+python3 -m venv venv
 source venv/bin/activate
 ```
 1. After cloning this repo, create a Python venv and run:
