@@ -1,14 +1,18 @@
 # Discord bot 内鬼模式机器人
 
 ## How to run
+1. Create venv:
+```
+source venv/bin/activate
+```
 1. After cloning this repo, create a Python venv and run:
 ```
 python3 -m pip install -U discord.py
-pip install python-dotenv
+pip3 install python-dotenv
 ```
 2. In terminal:
 ```
-python main.py
+python3 main.py
 ```
 3. Also need to create a .env file and add this line to it:
 ```
